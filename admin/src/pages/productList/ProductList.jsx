@@ -10,9 +10,10 @@ export default function ProductList() {
   const dispatch = useDispatch();
   const products = useSelector((state) => state.product.products);
 
+
   useEffect(() => {
     getProducts(dispatch);
-  }, [dispatch]);
+  }, [dispatch]); 
 
   const handleDelete = (id) => {
     deleteProduct(id, dispatch);
@@ -44,6 +45,7 @@ export default function ProductList() {
       headerName: "Action",
       width: 150,
       renderCell: (params) => {
+      
         return (
           <>
             <Link to={"/product/" + params.row._id}>

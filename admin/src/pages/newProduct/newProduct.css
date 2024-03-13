@@ -38,3 +38,9 @@
   font-weight: 600;
   cursor: pointer;
 }
+.updateMessage {
+  color: green;
+  font-weight: bold;
+  margin: 10px 0;
+}
+

@@ -10,6 +10,7 @@ const ProductSchema = new mongoose.Schema(
     color: { type: Array },
     price: { type: String, required: true },
     inStock: {type: Boolean, default: true},
+    maxquantity: {type: String}
   },
   { timestamps: true }
 );

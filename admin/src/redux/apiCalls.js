@@ -53,7 +53,6 @@ export const deleteProduct = async (id, dispatch) => {
   dispatch(deleteProductStart());
   try {
     const res = await userRequest.delete(`/products/${id}`);
-    console.log(res)
     dispatch(deleteProductSuccess(id));
   } catch (err) {
     dispatch(deleteProductFailure());
@@ -63,12 +62,13 @@ export const deleteProduct = async (id, dispatch) => {
 export const updateProduct = async (id, product, dispatch) => {
   dispatch(updateProductStart());
   try {
-    // update
-    dispatch(updateProductSuccess({ id, product }));
+    const res = await publicRequest.put(`/products/${id}`, product);
+    getProducts(dispatch);
   } catch (err) {
     dispatch(updateProductFailure());
   }
 };
+
 export const addProduct = async (product, dispatch) => {
   dispatch(addProductStart());
   try {
@@ -82,8 +82,9 @@ export const addProduct = async (product, dispatch) => {
 export const getUsers = async (dispatch) => {
   dispatch(getUserStart());
   try {
-    const res = await publicRequest.get("/users");
+    const res = await userRequest.get("/users");
     dispatch(getUserSuccess(res.data));
+    
   } catch (err) {
     dispatch(getUserFailure());
   }
@@ -93,29 +94,30 @@ export const deleteUser = async (id, dispatch) => {
   dispatch(deleteUserStart());
   try {
     const res = await userRequest.delete(`/users/${id}`);
-    console.log(res)
     dispatch(deleteUserSuccess(id));
   } catch (err) {
-    dispatch(deleteUserFailure());
+    dispatch(deleteUserFailure()); 
   }
 };
 
 export const updateUser = async (id, user, dispatch) => {
   dispatch(updateUserStart());
   try {
-    // update
-    dispatch(updateUserSuccess({ id, user }));
+    const res = await userRequest.put(`/users/${id}`, user);
+    console.log(res.data)
+    getUsers(dispatch);
   } catch (err) {
     dispatch(updateUserFailure());
   }
 };
 
-// export const addUser = async (user, dispatch) => {
-//   dispatch(addUserStart());
-//   try {
-//     const res = await userRequest.post(`/products`, user);
-//     dispatch(addUserSuccess(res.data));
-//   } catch (err) {
-//     dispatch(addUserFailure());
-//   }
-// };
+export const addUser = async (user, dispatch) => {
+  dispatch(addUserStart());
+  try {
+    const res = await userRequest.post(`/auth/register`, user);
+    console.log(res.data)
+    dispatch(addUserSuccess(res.data));
+  } catch (err) {
+    dispatch(addUserFailure());
+  }
+};

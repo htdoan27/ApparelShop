@@ -1,33 +1,90 @@
+import { useState } from "react";
+import { addUser } from "../../redux/apiCalls";
+import { useDispatch } from "react-redux";
 import "./newUser.css";
 
 export default function NewUser() {
+  const [inputs, setInputs] = useState({});
+  const [updateMessage, setUpdateMessage] = useState("");
+  const dispatch = useDispatch();
+
+  const handleChange = (e) => {
+    setInputs((prev) => {
+      return { ...prev, [e.target.name]: e.target.value };
+    });
+  };
+
+  const handleClick = async (e) => {
+    e.preventDefault();
+    const user = { ...inputs };
+    try {
+      // Assume addUser returns a Promise
+      await addUser(user, dispatch);
+      setUpdateMessage("Creating successful");
+    } catch (error) {
+
+      setUpdateMessage("Creating failed. Please try again.");
+    }
+  };
+
   return (
     <div className="newUser">
       <h1 className="newUserTitle">New User</h1>
+      {updateMessage && <p className="updateMessage">{updateMessage}</p>}
       <form className="newUserForm">
         <div className="newUserItem">
           <label>Username</label>
-          <input type="text" placeholder="john" />
+          <input
+            name="username"
+            type="text"
+            placeholder="john"
+            onChange={handleChange}
+          />
         </div>
         <div className="newUserItem">
           <label>Full Name</label>
-          <input type="text" placeholder="John Smith" />
+          <input
+            name="name"
+            type="text"
+            placeholder="John Smith"
+            onChange={handleChange}
+          />
         </div>
         <div className="newUserItem">
           <label>Email</label>
-          <input type="email" placeholder="john@gmail.com" />
+          <input
+            name="email"
+            type="email"
+            placeholder="john@gmail.com"
+            onChange={handleChange}
+          />
         </div>
         <div className="newUserItem">
           <label>Password</label>
-          <input type="password" placeholder="password" />
+          <input
+            name="password"
+            type="password"
+            placeholder="password"
+            onChange={handleChange}
+          />
         </div>
         <div className="newUserItem">
           <label>Phone</label>
-          <input type="text" placeholder="+1 123 456 78" />
+          <input
+            name="phone"
+            type="text"
+            placeholder="+1 123 456 78"
+            onChange={handleChange}
+          />
         </div>
         <div className="newUserItem">
           <label>Address</label>
-          <input type="text" placeholder="New York | USA" />
+          <input
+            name="address"
+            type="text"
+            placeholder="New York | USA"
+            onChange={handleChange}
+          />
         </div>
         <div className="newUserItem">
           <label>Gender</label>
@@ -47,7 +104,9 @@ export default function NewUser() {
             <option value="no">No</option>
           </select>
         </div>
-        <button className="newUserButton">Create</button>
+        <button onClick={handleClick} className="newUserButton">
+          Create
+        </button>
       </form>
     </div>
   );

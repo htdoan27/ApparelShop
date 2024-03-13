@@ -2,16 +2,17 @@ import styled from "styled-components";
 import Navbar from "../components/Navbar";
 import Announcement from "../components/Announcement";
 import Footer from "../components/Footer";
-import { Add, Remove } from "@material-ui/icons";
+import { Add, Delete, Remove } from "@material-ui/icons";
 import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import { userRequest } from "../requestMedhods";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 import StripeCheckout from "react-stripe-checkout";
+import { removeFromCart } from "../redux/cartRedux";
+import { useDispatch } from "react-redux";
+// import DeleteIcon from '@mui/icons-material/Delete';
 
-const KEY = "pk_test_51NkpqlFjgQmQhjqjTuMy3Jr8vPsDLV4DTNaqJhXg7yfMCaH8tkVx7o4fL3IS5KGgku0RDl8TthNMTMECLTZ5dc2600oCcukX54";
-
-console.log(KEY);
+const KEY = process.env.REACT_APP_STRIPE;
 
 const Container = styled.div``;
 
@@ -95,6 +96,7 @@ const PriceDetail = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  position: relative;
 `;
 const ProductAmountContainer = styled.div`
   display: flex;
@@ -104,6 +106,14 @@ const ProductAmountContainer = styled.div`
 const ProductAmount = styled.div`
   font-size: 24px;
   margin: 5px;
+`;
+
+const DeleteButton = styled.button`
+  background-color: white;
+  border: none;
+  position: absolute;
+  top: 20px;
+  right: 20px;
 `;
 
 const ProductPrice = styled.div`
@@ -150,30 +160,68 @@ const Button = styled.button`
 
 const Cart = () => {
   const cart = useSelector((state) => state.cart);
+  console.log("cart: " + cart);
   const [stripeToken, setStripeToken] = useState(null);
   const navigate = useNavigate();
+  const user = useSelector((state) => state.user.currentUser);
+  const quantity = useSelector((state) => state.cart.quantity);
+  const [showCheckout, setShowCheckout] = useState(false);
+  const dispatch = useDispatch();
 
-  
-  
   const onToken = (token) => {
     setStripeToken(token);
   };
+
+  
 
   useEffect(() => {
     const makeRequest = async () => {
       try {
         const res = await userRequest.post("/checkout/payment", {
           tokenId: stripeToken.id,
-          amount: 500,
+          amount: cart.total,
         });
-        console.log("res.data", res.data)
-        navigate("/success", {data1: res.data});
+
+        navigate("/success", {
+          state: { stripeData: res.data, products: cart },
+        });
         // history.push("/success");
-      } catch {console.log("Hello")}
+      } catch {}
     };
-    console.log(stripeToken)
+
     stripeToken && makeRequest();
   }, [stripeToken, cart.total, navigate]);
+
+  // Hàm nhóm các sản phẩm theo ID
+  const groupProductsById = () => {
+    const groupedProducts = {};
+
+    cart.products.forEach((product) => {
+      if (!groupedProducts[product._id]) {
+        groupedProducts[product._id] = [product];
+      } else {
+        groupedProducts[product._id].push(product);
+      }
+    });
+
+    return groupedProducts;
+  };
+
+  const sortedProducts = groupProductsById();
+
+  const handleDelete = (productId, size) => {
+    dispatch(removeFromCart({ productId, size }));
+  };
+
+  const handleCheckout = () => {
+    if (user != null) {
+      setShowCheckout(true);
+    } else {
+      // Nếu JWT không hợp lệ, chuyển hướng đến trang "/login"
+      navigate("/login");
+    }
+  };
+  
 
   return (
     <Container>
@@ -184,41 +232,48 @@ const Cart = () => {
         <Top>
           <TopButton>CONTINUE SHOPPING</TopButton>
           <TopTexts>
-            <TopText>Sopping Bag(2)</TopText>
+            <TopText>Shopping Bag({quantity})</TopText>
             <TopText>Your Wishlist (0)</TopText>
           </TopTexts>
           <TopButton type="filled">CHECKOUT HERE</TopButton>
         </Top>
         <Bottom>
           <Info>
-            {cart.products.map((product) => (
-              <Product>
-                <ProductDetail>
-                  <Image src={product.img} />
-                  <Details>
-                    <ProductName>
-                      <b>Product:</b> {product.title}
-                    </ProductName>
-                    <ProductId>
-                      <b>ID:</b> {product._id}
-                    </ProductId>
-                    <ProductColor color={product.color} />
-                    <ProductSize>
-                      <b>Size:</b> {product.size}
-                    </ProductSize>
-                  </Details>
-                </ProductDetail>
-                <PriceDetail>
-                  <ProductAmountContainer>
-                    <Add />
-                    <ProductAmount>{product.quantity}</ProductAmount>
-                    <Remove />
-                  </ProductAmountContainer>
-                  <ProductPrice>
-                    $ {product.price * product.quantity}
-                  </ProductPrice>
-                </PriceDetail>
-              </Product>
+            {Object.keys(sortedProducts).map((productId) => (
+              <div key={productId}>
+                {sortedProducts[productId].map((product) => (
+                  <Product key={product._id}>
+                    <ProductDetail>
+                      <Image src={product.img} />
+                      <Details>
+                        <ProductName>
+                          <b>Product:</b> {product.title}
+                        </ProductName>
+                        <ProductId>
+                          <b>ID:</b> {product._id}
+                        </ProductId>
+                        <ProductColor color={product.color} />
+                        <ProductSize>
+                          <b>Size:</b> {product.size}
+                        </ProductSize>
+                      </Details>
+                    </ProductDetail>
+                    <PriceDetail>
+                      <ProductAmountContainer>
+                        <DeleteButton onClick={() => handleDelete(product._id, product.size)}>
+                          <Delete />
+                        </DeleteButton>
+                        <Add />
+                        <ProductAmount>{product.quantity}</ProductAmount>
+                        <Remove />
+                      </ProductAmountContainer>
+                      <ProductPrice>
+                        $ {product.price * product.quantity}
+                      </ProductPrice>
+                    </PriceDetail>
+                  </Product>
+                ))}
+              </div>
             ))}
           </Info>
           <Summary>
@@ -239,9 +294,12 @@ const Cart = () => {
               <SummaryItemText>Total</SummaryItemText>
               <SummaryItemPrice>$ {cart.total}</SummaryItemPrice>
             </SummaryItem>
+            {!showCheckout ? (
+            <Button onClick={handleCheckout}>CHECKOUT NOW</Button>
+          ) : (
             <StripeCheckout
               name="Doan Shop"
-              image="https://avatars.githubusercontent.com/u/1486366?v=4"
+              image="https://www.facebook.com/photo/?fbid=782935406888748&set=a.111754324006863"
               billingAddress
               shippingAddress
               description={`Your total is $${cart.total}`}
@@ -249,8 +307,9 @@ const Cart = () => {
               token={onToken}
               stripeKey={KEY}
             >
-              <Button>CHECKOUT NOW</Button>
+              {/* <Button disabled>Processing Payment...</Button> */}
             </StripeCheckout>
+          )}
           </Summary>
         </Bottom>
       </Wrapper>

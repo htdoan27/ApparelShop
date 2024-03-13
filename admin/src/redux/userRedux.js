@@ -1,8 +1,9 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-const userSlice = createSlice({
+export const userSlice = createSlice({
   name: "user",
   initialState: {
+    currentUser: null,
     users: [],
     isFetching: false,
     error: false,
@@ -19,7 +20,10 @@ const userSlice = createSlice({
       state.isFetching = false;
       state.error = true;
     },
-// GET ALL
+    logout: (state) => {
+      state.currentUser = null;
+    },
+    // GET ALL
     getUserStart: (state) => {
       state.isFetching = true;
       state.error = false;
@@ -27,68 +31,62 @@ const userSlice = createSlice({
 
     getUserSuccess: (state, action) => {
       state.isFetching = false;
-      state.products.splice(
-        state.products.findIndex((item) => item._id === action.payload),
-        1
-      );
+      state.users = action.payload;
     },
+
     getUserFailure: (state) => {
       state.isFetching = false;
       state.error = true;
     },
-  },
 
-  // DELETE
+    // DELETE
+    deleteUserStart: (state) => {
+      state.isFetching = true;
+      state.error = false;
+    },
+    deleteUserSuccess: (state, action) => {
+      state.isFetching = false;
+      state.users.splice(
+        state.users.findIndex((item) => item._id === action.payload),
+        1
+      );
+    },
+    deleteUserFailure: (state) => {
+      state.isFetching = false;
+      state.error = true;
+    },
 
-  deleteUserStart: (state) => {
-    state.isFetching = true;
-    state.error = false;
-  },
-  deleteUserSuccess: (state, action) => {
-    state.isFetching = false;
-    state.users.splice(
-      state.users.findIndex((item) => item._id === action.payload),
-      1
-    );
-  },
-  deleteUserFailure: (state) => {
-    state.isFetching = false;
-    state.error = true;
-  },
+    //UPDATE
+    updateUserStart: (state) => {
+      state.isFetching = true;
+      state.error = false;
+    },
+    updateUserSuccess: (state, action) => {
+      state.isFetching = false;
+      state.users[
+        state.users.findIndex((item) => item._id === action.payload.id)
+      ] = action.payload.user;
+    },
+    updateUserFailure: (state) => {
+      state.isFetching = false;
+      state.error = true;
+    },
 
-  //UPDATE
-  updateUserStart: (state) => {
-    state.isFetching = true;
-    state.error = false;
+    //ADD
+    addUserStart: (state) => {
+      state.isFetching = true;
+      state.error = false;
+    },
+    addUserSuccess: (state, action) => {
+      state.isFetching = false;
+      state.users.push(action.payload);
+    },
+    addUserFailure: (state) => {
+      state.isFetching = false;
+      state.error = true;
+    },
   },
-  updateUserSuccess: (state, action) => {
-    state.isFetching = false;
-    state.users[
-      state.users.findIndex((item) => item._id === action.payload.id)
-    ] = action.payload.user;
-  },
-  updateUserFailure: (state) => {
-    state.isFetching = false;
-    state.error = true;
-  },
-
-  //ADD
-  addUserStart: (state) => {
-    state.isFetching = true;
-    state.error = false;
-  },
-  addUserSuccess: (state, action) => {
-    state.isFetching = false;
-    state.users.push(action.payload);
-  },
-  addUserFailure: (state) => {
-    state.isFetching = false;
-    state.error = true;
-  },
-
 });
-
-
 
 export const {
   loginStart,
@@ -107,4 +105,5 @@ export const {
   addUserSuccess,
   addUserFailure,
 } = userSlice.actions;
+
 export default userSlice.reducer;

@@ -1,5 +1,7 @@
 import styled from "styled-components";
-
+import { publicRequest } from "../requestMedhods";
+import { useState, useEffect   } from "react";
+import { useNavigate } from "react-router-dom";
 const Container = styled.div`
   width: 100vw;
   height: 100vh;
@@ -8,7 +10,7 @@ const Container = styled.div`
       rgba(255, 255, 255, 0.5)
     ),
     url("https://images.pexels.com/photos/6984661/pexels-photo-6984661.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940")
-    center;
+      center;
   background-size: cover;
   display: flex;
   align-items: center;
@@ -24,7 +26,6 @@ const Wrapper = styled.div`
 const Form = styled.form`
   display: flex;
   flex-wrap: wrap;
-
 `;
 
 const Title = styled.h1`
@@ -54,22 +55,83 @@ const Button = styled.button`
 `;
 
 const Register = () => {
+  const [inputs, setInputs] = useState({});
+  const [updateMessage, setUpdateMessage] = useState("");
+  const [fullName, setFullName] = useState("");
+  const navigate = useNavigate();
+
+  const handleChange = (e) => {
+    setInputs((prev) => {
+      return { ...prev, [e.target.name]: e.target.value };
+    });
+  };
+  
+  useEffect(() => {
+    // Cập nhật fullName khi inputs thay đổi
+    if (inputs.name && inputs.lastName) {
+      setFullName(inputs.name + " " + inputs.lastName);
+    }
+  }, [inputs]);
+
+  const handleClick = async (e) => {
+    e.preventDefault();
+    const user = { ...inputs, name: fullName };
+    try {
+      // Assume addUser returns a Promise
+      await publicRequest.post("/auth/register", user);
+      setUpdateMessage("Update successful");
+      navigate("/login");
+    } catch (error) {
+      setUpdateMessage("Register failed. Please try again.");
+    }
+  };
+
   return (
     <Container>
       <Wrapper>
         <Title>CREATE AN ACCOUNT</Title>
         <Form>
-          <Input placeholder="name" />
-          <Input placeholder="last name" />
-          <Input placeholder="username" />
-          <Input placeholder="email" />
-          <Input placeholder="password" />
-          <Input placeholder="confirm password" />
+          <Input
+            name="name"
+            type="text"
+            placeholder="name"
+            onChange={handleChange}
+          />
+          <Input
+            name="lastName"
+            type="text"
+            placeholder="last name"
+            onChange={handleChange}
+          />
+          <Input
+            name="username"
+            type="text"
+            placeholder="username"
+            onChange={handleChange}
+          />
+          <Input
+            name="email"
+            type="email"
+            placeholder="email"
+            onChange={handleChange}
+          />
+          <Input
+            name="password"
+            type="password"
+            placeholder="password"
+            onChange={handleChange}
+          />
+          <Input type="password" placeholder="confirm password" />
+          {updateMessage && (
+            <p style={{ padding: "10px" }} className="updateMessage">
+              {updateMessage}
+            </p>
+          )}
           <Agreement>
             By creating an account, I consent to the processing of my personal
             data in accordance with the <b>PRIVACY POLICY</b>
           </Agreement>
-          <Button>CREATE</Button>
+          <Button onClick={handleClick}>CREATE</Button>
         </Form>
       </Wrapper>
     </Container>

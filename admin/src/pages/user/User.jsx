@@ -6,10 +6,35 @@ import {
   PhoneAndroid,
   Publish,
 } from "@material-ui/icons";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { useState } from "react";
 import "./user.css";
+import { updateUser } from "../../redux/apiCalls";
 
 export default function User() {
+  const location = useLocation();
+  const userId = location.pathname.split("/")[2];
+  const [inputs, setInputs] = useState({});
+  const dispatch = useDispatch();
+
+  const user = useSelector((state) =>
+    state.user.users.find((user) => user._id === userId)
+  );
+
+  const handleChange = (e) => {
+    setInputs((prev) => {
+      return { ...prev, [e.target.name]: e.target.value };
+    });
+  };
+
+  const handleClick = (e) => {
+    e.preventDefault();
+    const user = { ...inputs };
+    console.log(user);
+    updateUser(userId, user, dispatch);
+  };
+
   return (
     <div className="user">
       <div className="userTitleContainer">
@@ -27,7 +52,7 @@ export default function User() {
               className="userShowImg"
             />
             <div className="userShowTopTitle">
-              <span className="userShowUsername">Anna Becker</span>
+              <span className="userShowUsername">{user.name}</span>
               <span className="userShowUserTitle">Software Engineer</span>
             </div>
           </div>
@@ -35,7 +60,7 @@ export default function User() {
             <span className="userShowTitle">Account Details</span>
             <div className="userShowInfo">
               <PermIdentity className="userShowIcon" />
-              <span className="userShowInfoTitle">annabeck99</span>
+              <span className="userShowInfoTitle">{user.username}</span>
             </div>
             <div className="userShowInfo">
               <CalendarToday className="userShowIcon" />
@@ -44,15 +69,15 @@ export default function User() {
             <span className="userShowTitle">Contact Details</span>
             <div className="userShowInfo">
               <PhoneAndroid className="userShowIcon" />
-              <span className="userShowInfoTitle">+1 123 456 67</span>
+              <span className="userShowInfoTitle">{user.phone}</span>
             </div>
             <div className="userShowInfo">
               <MailOutline className="userShowIcon" />
-              <span className="userShowInfoTitle">annabeck99@gmail.com</span>
+              <span className="userShowInfoTitle">{user.email}</span>
             </div>
             <div className="userShowInfo">
               <LocationSearching className="userShowIcon" />
-              <span className="userShowInfoTitle">New York | USA</span>
+              <span className="userShowInfoTitle">{user.address}</span>
             </div>
           </div>
         </div>
@@ -63,41 +88,51 @@ export default function User() {
               <div className="userUpdateItem">
                 <label>Username</label>
                 <input
+                  name="username"
                   type="text"
                   placeholder="annabeck99"
                   className="userUpdateInput"
+                  onChange={handleChange}
                 />
               </div>
               <div className="userUpdateItem">
                 <label>Full Name</label>
                 <input
+                  name="name"
                   type="text"
                   placeholder="Anna Becker"
                   className="userUpdateInput"
+                  onChange={handleChange}
                 />
               </div>
               <div className="userUpdateItem">
                 <label>Email</label>
                 <input
+                  name="email"
                   type="text"
                   placeholder="annabeck99@gmail.com"
                   className="userUpdateInput"
+                  onChange={handleChange}
                 />
               </div>
               <div className="userUpdateItem">
                 <label>Phone</label>
                 <input
+                  name="phone"
                   type="text"
                   placeholder="+1 123 456 67"
                   className="userUpdateInput"
+                  onChange={handleChange}
                 />
               </div>
               <div className="userUpdateItem">
                 <label>Address</label>
                 <input
+                  name="address"
                   type="text"
                   placeholder="New York | USA"
                   className="userUpdateInput"
+                  onChange={handleChange}
                 />
               </div>
             </div>
@@ -113,7 +148,9 @@ export default function User() {
                 </label>
                 <input type="file" id="file" style={{ display: "none" }} />
               </div>
-              <button className="userUpdateButton">Update</button>
+              <button onClick={handleClick} className="userUpdateButton">
+                Update
+              </button>
             </div>
           </form>
         </div>

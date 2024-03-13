@@ -14,11 +14,10 @@ export default function UserList() {
     getUsers(dispatch);
   }, [dispatch]);
 
+
   const handleDelete = (id) => {
     deleteUser(id, dispatch);
   };
-
-  console.log(users)
 
 
 
@@ -31,7 +30,8 @@ export default function UserList() {
       renderCell: (params) => {
         return (
           <div className="userListUser">
-            <img className="userListImg" src={params.row.avatar} alt="" />
+            <img className="userListImg" src={params.row.isAdmin ? "https://i.ibb.co/n89fGfD/Pngtree-vector-administration-icon-4090499.png" : "https://i.ibb.co/c3PGS3d/585e4bd7cb11b227491c3397.png"} alt="" />
+
             {params.row.username}
           </div>
         );
@@ -55,12 +55,12 @@ export default function UserList() {
       renderCell: (params) => {
         return (
           <>
-            <Link to={"/user/" + params.row.id}>
+            <Link to={"/user/" + params.row._id}>
               <button className="userListEdit">Edit</button>
             </Link>
             <DeleteOutline
               className="userListDelete"
-              onClick={() => handleDelete(params.row.id)}
+              onClick={() => handleDelete(params.row._id)}
             />
           </>
         );
@@ -71,11 +71,11 @@ export default function UserList() {
   return (
     <div className="userList">
       <DataGrid
-        // rows={users}
+        rows={users}
         disableSelectionOnClick
         columns={columns}
-        // getRowId={(row) => row._id}
-        pageSize={8}
+        getRowId={(row) => row._id}
+        pageSize={10}
         checkboxSelection
       />
     </div>
